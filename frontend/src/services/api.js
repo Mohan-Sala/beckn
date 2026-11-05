@@ -30,7 +30,11 @@ export const candidateService = {
   verifyResumeFile: (formData) => api.post('/candidates/verify-resume', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  verifyResumeText: (text) => api.post('/candidates/verify-resume-text', { text })
+  verifyResumeText: (text) => api.post('/candidates/verify-resume-text', { text }),
+  verifyCertificateQr: (formData) => api.post('/candidates/verify-certificate-qr', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  verifyQrPayload: (payload) => api.post('/candidates/verify-qr-payload', { payload })
 };
 
 export const verificationService = {

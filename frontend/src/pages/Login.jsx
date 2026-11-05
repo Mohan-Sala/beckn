@@ -76,14 +76,19 @@ export default function Login({ onLogin }) {
       <div className="w-full max-w-md z-10 animate-slide-up mx-4">
         <div className="glass rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/60">
           <div className="flex flex-col items-center mb-8">
-            <div className="bg-gradient-to-br from-primary-500 to-primary-700 p-4 rounded-2xl shadow-lg mb-4 text-white transform hover:scale-105 transition-transform">
+            <div className="bg-gradient-to-br from-primary-500 to-primary-700 p-4 rounded-2xl shadow-lg mb-3 text-white transform hover:scale-105 transition-transform">
               <ShieldCheck size={40} />
             </div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-[11px] font-extrabold uppercase tracking-wider mb-3">
+              <span>ONEST Framework</span> • <span>Beckn Protocol</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight text-center">
               {isSignup ? 'Create an Account' : 'Welcome Back'}
             </h2>
-            <p className="text-gray-500 mt-2 text-center text-sm">
-              {isSignup ? 'Join the Beckn skill verification network.' : 'Secure skill verification powered by the Beckn protocol.'}
+            <p className="text-gray-500 mt-2 text-center text-xs sm:text-sm leading-relaxed">
+              {isSignup 
+                ? 'Join the Beckn-based skill verification network with ONEST framework.' 
+                : 'Decentralized skill and credential verification powered by Beckn & ONEST.'}
             </p>
           </div>
 

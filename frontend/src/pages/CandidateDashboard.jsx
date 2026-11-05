@@ -59,6 +59,9 @@ export default function CandidateDashboard({ user }) {
             {profile.name.charAt(0)}
           </div>
           <div className="flex-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-2">
+              <ShieldCheck size={12} /> ONEST Network Verified Candidate
+            </div>
             <h1 className="text-3xl font-extrabold mb-2 tracking-tight">{profile.name}</h1>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-300 font-medium">
               <span className="flex items-center gap-2"><GraduationCap size={18} className="text-primary-400"/> {profile.education}</span>

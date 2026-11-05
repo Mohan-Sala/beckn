@@ -82,8 +82,11 @@ export default function VerificationProcess({ user }) {
         <div className="inline-flex items-center justify-center p-4 bg-primary-100 rounded-2xl mb-4 shadow-inner">
           <Network size={40} className="text-primary-600" />
         </div>
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Beckn Network Verification</h2>
-        <p className="text-gray-500 mt-2 text-lg max-w-2xl mx-auto">Verify your <span className="font-bold text-gray-800">{skill.name}</span> skill across decentralized registries and assessment providers.</p>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-xs font-extrabold uppercase tracking-wider mb-3">
+          <span>ONEST Framework</span> • <span>Beckn BAP</span>
+        </div>
+        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Beckn & ONEST Network Verification</h2>
+        <p className="text-gray-500 mt-2 text-lg max-w-2xl mx-auto">Verify your <span className="font-bold text-gray-800">{skill.name}</span> skill across decentralized registries and assessment providers in the ONEST framework.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">

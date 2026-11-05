@@ -24,6 +24,7 @@ public class CandidateController {
     private final CandidateService candidateService;
     private final CredentialRepository credentialRepository;
     private final com.beckn.skill_verification.service.ResumeVerificationService resumeVerificationService;
+    private final com.beckn.skill_verification.service.QrCertificateVerificationService qrCertificateVerificationService;
     
     @GetMapping("/{id}")
     public ResponseEntity<CandidateProfileDto> getProfile(@PathVariable Long id) {
@@ -118,6 +119,31 @@ public class CandidateController {
             System.out.println("Error processing resume: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", "Failed to process resume: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/verify-certificate-qr")
+    public ResponseEntity<?> verifyCertificateQr(@RequestParam("file") MultipartFile file) {
+        try {
+            var response = qrCertificateVerificationService.verifyCertificateFile(file);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Error verifying certificate: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", "Failed to scan certificate: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/verify-qr-payload")
+    public ResponseEntity<?> verifyQrPayload(@RequestBody java.util.Map<String, String> request) {
+        try {
+            String payload = request.getOrDefault("payload", "");
+            var response = qrCertificateVerificationService.verifyPayloadDirectly(payload);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Error verifying QR payload: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", "Failed to verify payload: " + e.getMessage()));
         }
     }
 

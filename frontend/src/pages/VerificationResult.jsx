@@ -67,11 +67,16 @@ export default function VerificationResult({ user }) {
           <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjMpIi8+PC9zdmc+')] opacity-30"></div>
           
           <div className="relative z-10 animate-fade-in">
-            <div className="inline-flex items-center justify-center p-6 bg-white/20 rounded-full backdrop-blur-md border-4 border-white/40 mb-6 shadow-xl">
+            <div className="inline-flex items-center justify-center p-6 bg-white/20 rounded-full backdrop-blur-md border-4 border-white/40 mb-4 shadow-xl">
               <ShieldCheck size={64} className="text-white" />
             </div>
+            <div className="block mb-2">
+              <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-white/20 text-white border border-white/30 rounded-full text-[11px] font-extrabold uppercase tracking-wider">
+                ONEST Framework • Beckn Verified
+              </span>
+            </div>
             <h2 className="text-4xl font-extrabold tracking-tight mb-2">Skill Verified!</h2>
-            <p className="text-success-100 text-lg font-medium">Your skill has been successfully validated across the network.</p>
+            <p className="text-success-100 text-lg font-medium">Your skill has been successfully validated across the ONEST network.</p>
           </div>
         </div>
 

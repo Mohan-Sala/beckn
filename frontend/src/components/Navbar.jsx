@@ -19,9 +19,14 @@ export default function Navbar({ user, onLogout }) {
         <div className="bg-primary-600 p-2 rounded-lg text-white group-hover:bg-primary-700 transition-colors shadow-md">
           <ShieldCheck size={24} />
         </div>
-        <span className="font-extrabold text-xl tracking-tight text-gray-900 group-hover:text-primary-600 transition-colors">
-          Beckn<span className="text-primary-600 font-light">Verify</span>
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-extrabold text-xl tracking-tight text-gray-900 group-hover:text-primary-600 transition-colors">
+            Beckn<span className="text-primary-600 font-light">Verify</span>
+          </span>
+          <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+            ONEST Framework
+          </span>
+        </div>
       </div>
       
       <div className="flex items-center gap-6">

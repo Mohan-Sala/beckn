@@ -34,8 +34,11 @@ export default function EmployerDashboard() {
         <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-emerald-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 -translate-y-1/2"></div>
         
         <div className="max-w-4xl mx-auto text-center relative z-10 animate-fade-in">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 text-emerald-300 border border-white/20 rounded-full text-xs font-extrabold uppercase tracking-wider mb-4">
+            <span>ONEST Framework</span> • <span>Beckn Protocol BAP</span>
+          </div>
           <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Verify Talent with Confidence</h1>
-          <p className="text-xl text-gray-400 font-medium mb-10 max-w-2xl mx-auto">Access cryptographically verified skills and credentials instantly through the Beckn network.</p>
+          <p className="text-lg md:text-xl text-gray-300 font-medium mb-10 max-w-2xl mx-auto">Access cryptographically verified skills and credentials instantly through the ONEST decentralized network powered by Beckn protocol.</p>
           
           <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto group">
             <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
