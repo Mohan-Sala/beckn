@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { candidateService } from '../services/api';
-import { CheckCircle, AlertTriangle, Clock, GraduationCap, ChevronRight, PlusCircle, Sparkles, ShieldCheck, Share2, Network, ExternalLink } from 'lucide-react';
+import { 
+  CheckCircle, AlertTriangle, Clock, GraduationCap, ChevronRight, 
+  PlusCircle, Sparkles, ShieldCheck, Share2, Network, ExternalLink, 
+  Layers, CheckCircle2, Shield
+} from 'lucide-react';
 
 export default function CandidateDashboard({ user }) {
   const [profile, setProfile] = useState(null);
@@ -30,122 +34,248 @@ export default function CandidateDashboard({ user }) {
   }, [user.id]);
 
   if (!profile) return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+    <div className="min-h-[80vh] flex flex-col items-center justify-center gap-3">
+      <div className="w-12 h-12 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Loading unified candidate profile...</p>
     </div>
   );
 
   const renderBadge = (status) => {
     switch (status) {
       case 'VERIFIED':
-        return <span className="bg-success-50 text-success-600 border border-success-200 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 shadow-sm"><CheckCircle size={14} className="animate-pulse-slow"/> Verified</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-xs">
+            <CheckCircle size={14} className="text-emerald-600" /> Verified
+          </span>
+        );
       case 'PARTIALLY VERIFIED':
-        return <span className="bg-yellow-50 text-yellow-700 border border-yellow-200 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 shadow-sm"><AlertTriangle size={14}/> Partially Verified</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/80 shadow-xs">
+            <AlertTriangle size={14} className="text-amber-600" /> Partially Verified
+          </span>
+        );
+      case 'NOT VERIFIED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-50 text-red-700 border border-red-200/80 shadow-xs">
+            <AlertTriangle size={14} className="text-red-600" /> Not Verified
+          </span>
+        );
       default:
-        return <span className="bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1 shadow-sm"><Clock size={14}/> Pending</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200/80 shadow-xs">
+            <Clock size={14} className="text-slate-400" /> Pending Review
+          </span>
+        );
     }
   };
 
+  // Metrics calculation
+  const totalSkills = profile.skills?.length || 0;
+  const verifiedSkills = profile.skills?.filter(s => s.verificationStatus === 'VERIFIED').length || 0;
+  const pendingSkills = totalSkills - verifiedSkills;
+
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-10 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in space-y-8">
       
       {/* Profile Hero Card */}
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl p-8 mb-10 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-10">
-          <GraduationCap size={200} />
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-3xl shadow-xl p-6 sm:p-10 text-white relative overflow-hidden border border-slate-700/60">
+        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none select-none hidden lg:block">
+          <GraduationCap size={280} />
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start md:items-center">
-          <div className="w-24 h-24 bg-gradient-to-tr from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-4xl font-extrabold shadow-inner border border-white/20">
-            {profile.name.charAt(0)}
-          </div>
-          <div className="flex-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-2">
-              <ShieldCheck size={12} /> ONEST Network Verified Candidate
+        
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center justify-between">
+          
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl font-black shadow-lg shadow-blue-500/30 border-2 border-white/20 shrink-0">
+              {profile.name.charAt(0).toUpperCase()}
             </div>
-            <h1 className="text-3xl font-extrabold mb-2 tracking-tight">{profile.name}</h1>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-gray-300 font-medium">
-              <span className="flex items-center gap-2"><GraduationCap size={18} className="text-primary-400"/> {profile.education}</span>
-              <span className="hidden sm:inline text-gray-600">•</span>
-              <span>{profile.college}</span>
-              <span className="hidden sm:inline text-gray-600">•</span>
-              <span>Class of {profile.graduationYear}</span>
+            
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                <ShieldCheck size={13} /> ONEST Network Verified Candidate
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">{profile.name}</h1>
+              
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-slate-300 text-xs sm:text-sm font-medium">
+                <span className="flex items-center gap-1.5 text-blue-300 font-semibold">
+                  <GraduationCap size={16} /> {profile.education}
+                </span>
+                <span className="text-slate-500">•</span>
+                <span>{profile.college}</span>
+                <span className="text-slate-500">•</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10 text-slate-200 text-xs font-semibold">
+                  Class of {profile.graduationYear}
+                </span>
+              </div>
             </div>
           </div>
-          <div className="bg-white/10 glass rounded-xl p-4 text-center min-w-[140px]">
-            <p className="text-xs uppercase tracking-wider text-gray-300 mb-1 font-semibold">Trust Score</p>
-            <p className="text-3xl font-bold text-white flex justify-center items-baseline gap-1">
-              {profile.overallVerificationScore}<span className="text-lg text-primary-400">%</span>
-            </p>
+
+          {/* Trust Score Radial Card */}
+          <div className="w-full md:w-auto bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex md:flex-col items-center justify-between md:justify-center min-w-[160px] text-center shadow-inner">
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-slate-400 font-bold mb-1">
+                Unified Trust Score
+              </p>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                  {profile.overallVerificationScore}
+                </span>
+                <span className="text-lg font-bold text-blue-400">%</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold mt-1">
+              <CheckCircle2 size={12} /> Capped &lt; 100% (Tamper-Resistant)
+            </div>
+          </div>
+
+        </div>
+
+        {/* Quick Stats Strip */}
+        <div className="mt-8 pt-6 border-t border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <Layers size={18} />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Total Skills</p>
+              <p className="text-lg font-bold text-white">{totalSkills}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <CheckCircle size={18} />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Verified Skills</p>
+              <p className="text-lg font-bold text-emerald-400">{verifiedSkills}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Clock size={18} />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">In Progress</p>
+              <p className="text-lg font-bold text-amber-300">{pendingSkills}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <Shield size={18} />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Network Standard</p>
+              <p className="text-xs font-bold text-indigo-300">W3C Verifiable</p>
+            </div>
           </div>
         </div>
+
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+      {/* Skills Section Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div>
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Your Skills</h2>
-          <p className="text-gray-500 mt-1">Manage and verify your professional competencies.</p>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            Professional Competency Matrix
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Cryptographically verifiable skills published to the Beckn ONEST network.
+          </p>
         </div>
         <button
           onClick={() => navigate('/candidate/verify-resume')}
-          className="bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md shadow-blue-500/20 transition-all active:scale-[0.98] self-start sm:self-auto"
         >
-          <Sparkles size={18} /> Auto-Verify via Resume
+          <Sparkles size={16} /> Auto-Verify via Resume / QR
         </button>
       </div>
 
       {/* Skills Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {profile.skills?.map((skill, idx) => (
-          <div key={skill.skillId} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 p-6 flex flex-col h-full animate-slide-up group" style={{ animationDelay: `${idx * 0.1}s` }}>
-            
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">{skill.name}</h3>
-                <p className="text-sm font-medium text-gray-500">{skill.category}</p>
+          <div 
+            key={skill.skillId} 
+            className="bg-white rounded-2xl shadow-xs hover:shadow-lg transition-all duration-300 border border-slate-200/80 p-6 flex flex-col justify-between group card-hover"
+            style={{ animationDelay: `${idx * 0.05}s` }}
+          >
+            <div>
+              {/* Card Header: Category & Badge */}
+              <div className="flex justify-between items-start mb-3 gap-2">
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md tracking-wide">
+                  {skill.category}
+                </span>
+                {renderBadge(skill.verificationStatus)}
               </div>
-              {renderBadge(skill.verificationStatus)}
+
+              {/* Skill Title */}
+              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                {skill.name}
+              </h3>
+
+              {/* Status Display Area */}
+              <div className="py-4 my-2 border-y border-slate-100 flex flex-col items-center justify-center min-h-[100px]">
+                {skill.verificationStatus === 'VERIFIED' ? (
+                  <div className="text-center space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full text-xs font-bold mb-1">
+                      <Sparkles size={13} className="text-emerald-600" />
+                      Level: {skill.competencyLevel}
+                    </div>
+                    
+                    {/* Score Bar */}
+                    <div className="w-full max-w-[200px] mt-2">
+                      <div className="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
+                        <span>Confidence</span>
+                        <span className="text-emerald-700 font-bold">{skill.confidenceScore}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className="bg-emerald-500 h-2 rounded-full transition-all duration-500" 
+                          style={{ width: `${Math.min(skill.confidenceScore || 0, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center px-2">
+                    <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 border-dashed flex items-center justify-center mx-auto mb-2 text-slate-400">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Upload certificate or scan QR to verify this credential.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center py-6">
-              {skill.verificationStatus === 'VERIFIED' ? (
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center p-4 bg-success-50 rounded-full mb-3 shadow-inner border border-success-100">
-                    <Sparkles size={28} className="text-success-500" />
-                  </div>
-                  <p className="font-bold text-gray-900">{skill.competencyLevel}</p>
-                  <p className="text-sm text-gray-500 font-medium">Confidence: <span className="text-success-600 font-bold">{skill.confidenceScore}%</span></p>
-                </div>
-              ) : (
-                <div className="text-center px-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-3 border border-gray-100 border-dashed">
-                    <ShieldCheck size={24} className="text-gray-300" />
-                  </div>
-                  <p className="text-sm text-gray-400 font-medium max-w-[200px] mx-auto">Upload credentials to verify this skill on the Beckn network.</p>
-                </div>
-              )}
-            </div>
-
+            {/* Card Action Buttons */}
             {skill.name.toLowerCase().includes('credly') ? (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
+              <div className="mt-4 pt-2">
                 <button 
                   onClick={() => navigate(`/verify-badge/${skill.skillId}`)}
-                  className={`flex-1 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ${
+                  className={`w-full text-xs font-bold py-2.5 px-4 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 ${
                     skill.verificationStatus === 'VERIFIED' 
-                    ? 'bg-white border-2 border-primary-500 text-primary-600 hover:bg-primary-50' 
-                    : 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:shadow-md hover:from-indigo-700 hover:to-indigo-800'
+                      ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200' 
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20'
                   }`}
                 >
-                  {skill.verificationStatus === 'VERIFIED' ? 'View Linked Badge' : 'Verify via Credly'} <ExternalLink size={18} />
+                  <span>{skill.verificationStatus === 'VERIFIED' ? 'View Linked Credly Badge' : 'Verify via Credly'}</span>
+                  <ExternalLink size={14} />
                 </button>
               </div>
             ) : (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
+              <div className="mt-4 pt-2 flex items-center gap-2.5">
                 <button 
                   onClick={() => navigate(`/candidate/credential/add/${skill.skillId}`)}
-                  className="flex-1 bg-gray-50 text-gray-700 font-semibold py-2.5 px-4 rounded-xl hover:bg-gray-100 transition-colors border border-gray-200 flex items-center justify-center gap-2"
+                  className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 transition-colors"
                 >
-                  <PlusCircle size={18} className="text-gray-400" /> Upload
+                  <PlusCircle size={15} className="text-slate-500" />
+                  <span>Upload</span>
                 </button>
+
                 <button 
                   onClick={() => {
                     if (skill.verificationStatus === 'VERIFIED') {
@@ -154,13 +284,14 @@ export default function CandidateDashboard({ user }) {
                       navigate(`/candidate/verification/${skill.skillId}`);
                     }
                   }}
-                  className={`flex-1 font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ${
+                  className={`flex-1 font-bold text-xs py-2.5 px-3 rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 ${
                     skill.verificationStatus === 'VERIFIED' 
-                    ? 'bg-white border-2 border-primary-500 text-primary-600 hover:bg-primary-50' 
-                    : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:shadow-md hover:from-primary-700 hover:to-primary-800'
+                      ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20'
                   }`}
                 >
-                  {skill.verificationStatus === 'VERIFIED' ? 'View Evidence' : 'Verify Now'} <ChevronRight size={18} />
+                  <span>{skill.verificationStatus === 'VERIFIED' ? 'Audit Proof' : 'Verify Now'}</span>
+                  <ChevronRight size={14} />
                 </button>
               </div>
             )}
@@ -169,44 +300,49 @@ export default function CandidateDashboard({ user }) {
       </div>
 
       {/* Hiring Platforms Section */}
-      <div className="mt-12 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+      <div className="mt-14 pt-8 border-t border-slate-200">
         <div className="flex items-center gap-3 mb-6">
-          <div className="bg-primary-100 p-2.5 rounded-xl text-primary-600 shadow-inner">
-            <Network size={24} />
+          <div className="p-2.5 rounded-xl bg-blue-100 text-blue-700 shadow-inner">
+            <Network size={22} />
           </div>
           <div>
-            <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Beckn Open Hiring Network</h2>
-            <p className="text-gray-500 mt-1 text-sm font-medium">Instantly share your verified trust score with 3+ compatible hiring platforms via ONEST.</p>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Beckn Open Hiring Network</h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Instantly broadcast your verified trust score with ONEST compatible hiring platforms without re-verification.
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {[
             { id: 'linkedin', name: 'LinkedIn Jobs', icon: 'LI', color: 'from-blue-600 to-blue-800' },
             { id: 'naukri', name: 'Naukri.com', icon: 'NK', color: 'from-sky-500 to-sky-700' },
-            { id: 'indeed', name: 'Indeed', icon: 'IN', color: 'from-indigo-600 to-indigo-800' }
+            { id: 'indeed', name: 'Indeed Platform', icon: 'IN', color: 'from-indigo-600 to-indigo-800' }
           ].map(platform => (
-            <div key={platform.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center hover:shadow-xl transition-all duration-300 group">
-              <div className={`w-16 h-16 bg-gradient-to-br ${platform.color} rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg mb-4 transform group-hover:scale-110 transition-transform`}>
+            <div 
+              key={platform.id} 
+              className="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 flex flex-col items-center text-center hover:shadow-md transition-all group card-hover"
+            >
+              <div className={`w-14 h-14 bg-gradient-to-br ${platform.color} rounded-2xl flex items-center justify-center text-white text-lg font-black shadow-md mb-3 transform group-hover:scale-105 transition-transform`}>
                 {platform.icon}
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">{platform.name}</h3>
-              <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-5">ONEST Partner</p>
+              <h3 className="font-bold text-slate-900 text-sm mb-0.5">{platform.name}</h3>
+              <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mb-4">ONEST Work Exchange</p>
               
               {connectedPlatforms[platform.id] ? (
-                <button disabled className="w-full bg-success-50 text-success-700 font-bold py-2.5 px-4 rounded-xl border border-success-200 flex justify-center items-center gap-2 cursor-default shadow-inner">
-                  <CheckCircle size={18} /> Synced via Beckn
+                <button disabled className="w-full bg-emerald-50 text-emerald-700 font-bold text-xs py-2 px-3 rounded-xl border border-emerald-200 flex justify-center items-center gap-1.5 cursor-default">
+                  <CheckCircle size={15} /> Synced via Beckn
                 </button>
               ) : (
                 <button 
                   onClick={() => connectPlatform(platform.id)}
                   disabled={isConnecting !== null}
-                  className="w-full bg-white text-gray-700 hover:text-primary-600 font-semibold py-2.5 px-4 rounded-xl border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-all flex justify-center items-center gap-2 shadow-sm"
+                  className="w-full bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-semibold text-xs py-2 px-3 rounded-xl border border-slate-200 hover:border-blue-200 transition-all flex justify-center items-center gap-1.5 shadow-xs"
                 >
                   {isConnecting === platform.id ? (
-                    <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    <><Share2 size={16} /> Sync Profile</>
+                    <><Share2 size={14} /> Sync Profile</>
                   )}
                 </button>
               )}
@@ -214,6 +350,7 @@ export default function CandidateDashboard({ user }) {
           ))}
         </div>
       </div>
+
     </div>
   );
 }

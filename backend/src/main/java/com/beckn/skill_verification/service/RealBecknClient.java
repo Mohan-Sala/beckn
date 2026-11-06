@@ -29,13 +29,13 @@ public class RealBecknClient implements BecknClient {
     private final BecknTransactionRepository transactionRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${beckn.gateway-url:http://localhost:8080/api/bpp}")
+    @Value("${beckn.gateway-url:http://localhost:8081/api/bpp}")
     private String gatewayUrl;
 
     @Value("${beckn.bap-id:skill-verification-bap.onest.network}")
     private String bapId;
 
-    @Value("${beckn.bap-uri:http://localhost:8080/api/beckn}")
+    @Value("${beckn.bap-uri:http://localhost:8081/api/beckn}")
     private String bapUri;
 
     @Value("${beckn.domain:onest:work-opportunities}")

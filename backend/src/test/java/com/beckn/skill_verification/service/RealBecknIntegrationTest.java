@@ -67,7 +67,7 @@ class RealBecknIntegrationTest {
                 .domain("onest:work-opportunities")
                 .action("search")
                 .bapId("skill-verification-bap.onest.network")
-                .bapUri("http://localhost:8080/api/beckn")
+                .bapUri("http://localhost:8081/api/beckn")
                 .transactionId(txId)
                 .messageId(UUID.randomUUID().toString())
                 .build();

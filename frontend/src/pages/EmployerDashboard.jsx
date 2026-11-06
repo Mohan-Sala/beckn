@@ -11,106 +11,193 @@ export default function EmployerDashboard() {
   const navigate = useNavigate();
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!searchTerm.trim()) return;
     setIsSearching(true);
     setHasSearched(true);
     try {
-      const res = await employerService.searchCandidates(searchTerm);
-      setResults(res.data);
+      const res = await employerService.searchCandidates(searchTerm.trim());
+      setResults(res.data || []);
     } catch (err) {
       console.error(err);
+      setResults([]);
     } finally {
       setIsSearching(false);
     }
   };
 
+  const handleQuickSearch = (name) => {
+    setSearchTerm(name);
+    setIsSearching(true);
+    setHasSearched(true);
+    employerService.searchCandidates(name)
+      .then(res => setResults(res.data || []))
+      .catch(() => setResults([]))
+      .finally(() => setIsSearching(false));
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-slate-50/70">
+      
       {/* Hero Search Section */}
-      <div className="bg-gray-900 text-white py-20 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
-        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 -translate-y-1/2"></div>
-        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-emerald-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 -translate-y-1/2"></div>
+      <div className="bg-slate-900 text-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-slate-800">
+        
+        {/* Subtle grid and ambient lights */}
+        <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
         
         <div className="max-w-4xl mx-auto text-center relative z-10 animate-fade-in">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 text-emerald-300 border border-white/20 rounded-full text-xs font-extrabold uppercase tracking-wider mb-4">
-            <span>ONEST Framework</span> • <span>Beckn Protocol BAP</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Verify Talent with Confidence</h1>
-          <p className="text-lg md:text-xl text-gray-300 font-medium mb-10 max-w-2xl mx-auto">Access cryptographically verified skills and credentials instantly through the ONEST decentralized network powered by Beckn protocol.</p>
           
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto group">
-            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-              <Search size={24} className="text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-            </div>
-            <input 
-              type="text" 
-              className="w-full pl-16 pr-32 py-5 bg-white/10 glass-dark text-white border border-white/20 rounded-2xl focus:ring-2 focus:ring-primary-500 focus:bg-white/20 transition-all outline-none text-lg placeholder-gray-400" 
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search candidates by name..."
-            />
-            <div className="absolute inset-y-0 right-2 flex items-center">
-              <button 
-                type="submit" 
-                disabled={isSearching}
-                className="bg-primary-600 hover:bg-primary-500 text-white px-6 py-3 rounded-xl font-bold transition-colors disabled:bg-gray-600 flex items-center gap-2"
-              >
-                {isSearching ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : 'Search'}
-              </button>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/80 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-5 shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            ONEST Framework • Beckn Protocol BAP
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
+            Verify Talent with Confidence
+          </h1>
+
+          <p className="text-sm sm:text-lg text-slate-300 font-normal mb-8 max-w-2xl mx-auto leading-relaxed">
+            Query authenticated credentials across the decentralized ONEST network. Instantly inspect cryptographically verified skills and issuer digital signatures.
+          </p>
+          
+          {/* Search Box */}
+          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+            <div className="relative flex items-center">
+              <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400">
+                <Search size={20} />
+              </div>
+              
+              <input 
+                type="text" 
+                className="w-full pl-12 pr-32 py-4 sm:py-4.5 bg-slate-800/90 text-white border border-slate-700 rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 text-sm sm:text-base outline-none transition-all placeholder-slate-400 shadow-2xl" 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Search candidates by name (e.g. Alex, Sarah)..."
+              />
+
+              <div className="absolute right-2 flex items-center">
+                <button 
+                  type="submit" 
+                  disabled={isSearching || !searchTerm.trim()}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 active:scale-95"
+                >
+                  {isSearching ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span>Search</span>
+                      <ArrowRight size={14} className="hidden sm:inline" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
+
+          {/* Quick Filter Suggestions */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-slate-400">
+            <span>Quick search:</span>
+            {['Alex', 'Sarah', 'John'].map(name => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => handleQuickSearch(name)}
+                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition-colors"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+
         </div>
       </div>
 
       {/* Results Section */}
-      <div className="max-w-5xl mx-auto p-6 md:p-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {!hasSearched ? (
-          <div className="text-center py-20 opacity-60">
-            <Briefcase size={64} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-xl font-bold text-gray-400">Enter a candidate name to begin.</p>
+          <div className="text-center py-20 px-4 bg-white rounded-3xl border border-slate-200/80 shadow-xs max-w-2xl mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 border border-blue-100">
+              <Briefcase size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Begin Candidate Discovery</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              Enter any candidate's name above to look up their unified profile and inspect verified Beckn ONEST skill badges.
+            </p>
           </div>
         ) : (
-          <div className="animate-slide-up">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              Search Results <span className="text-sm bg-gray-200 text-gray-600 py-1 px-2.5 rounded-full">{results.length}</span>
-            </h2>
+          <div className="animate-slide-up space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
+                <span>Search Results</span>
+                <span className="text-xs font-bold bg-blue-100 text-blue-700 py-0.5 px-2.5 rounded-full">
+                  {results.length} found
+                </span>
+              </h2>
+              <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+                Verified through ONEST Work Opportunities Protocol
+              </span>
+            </div>
             
             {results.length === 0 ? (
-              <div className="bg-white p-12 text-center rounded-3xl shadow-sm border border-gray-200">
-                <User size={48} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500 font-medium text-lg">No verified candidates found matching "{searchTerm}"</p>
+              <div className="bg-white p-12 text-center rounded-3xl shadow-xs border border-slate-200 max-w-xl mx-auto">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                  <User size={28} />
+                </div>
+                <h4 className="text-base font-bold text-slate-800 mb-1">No candidate records found</h4>
+                <p className="text-sm text-slate-500">
+                  No verified candidates matched "{searchTerm}". Check the spelling or try searching another name.
+                </p>
               </div>
             ) : (
-              <div className="grid gap-6">
+              <div className="grid gap-4">
                 {results.map((candidate, idx) => (
-                  <div key={candidate.candidateId} className="bg-white p-6 md:p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col md:flex-row items-center gap-6 group" style={{animationDelay: `${idx*0.1}s`}}>
-                    <div className="w-20 h-20 bg-gradient-to-tr from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center text-3xl font-extrabold text-gray-400 group-hover:from-primary-100 group-hover:to-primary-200 group-hover:text-primary-600 transition-colors shadow-inner">
-                      {candidate.name.charAt(0)}
-                    </div>
-                    
-                    <div className="flex-1 text-center md:text-left">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{candidate.name}</h3>
-                      <p className="text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2">
-                        <GraduationCap size={18}/> {candidate.education} ({candidate.graduationYear})
-                      </p>
-                    </div>
-
-                    <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 text-center w-full md:w-auto">
-                      <p className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-1">Overall Trust Score</p>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-3xl font-black text-gray-900">{candidate.overallVerificationScore}</span>
-                        <span className="text-gray-500 font-bold">%</span>
+                  <div 
+                    key={candidate.candidateId} 
+                    className="bg-white p-5 sm:p-6 rounded-2xl shadow-xs hover:shadow-md transition-all duration-200 border border-slate-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 group card-hover"
+                    style={{ animationDelay: `${idx * 0.05}s` }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center text-2xl font-black text-slate-600 group-hover:from-blue-600 group-hover:to-indigo-600 group-hover:text-white transition-all shadow-inner border border-slate-200 shrink-0">
+                        {candidate.name.charAt(0).toUpperCase()}
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                            {candidate.name}
+                          </h3>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            <ShieldCheck size={11} /> Verified
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-slate-500 flex items-center gap-1.5 font-medium">
+                          <GraduationCap size={15} className="text-slate-400 shrink-0" />
+                          <span>{candidate.education}</span>
+                          <span className="text-slate-400">•</span>
+                          <span>Graduation {candidate.graduationYear}</span>
+                        </p>
                       </div>
                     </div>
 
-                    <button 
-                      onClick={() => navigate(`/employer/candidate/${candidate.candidateId}`)}
-                      className="w-full md:w-auto bg-gray-900 hover:bg-gray-800 text-white font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
-                    >
-                      View Profile <ArrowRight size={18} />
-                    </button>
+                    <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                      <div className="bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 text-center min-w-[120px]">
+                        <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Trust Score</p>
+                        <div className="flex items-baseline justify-center gap-0.5">
+                          <span className="text-2xl font-black text-slate-900">{candidate.overallVerificationScore}</span>
+                          <span className="text-xs font-bold text-blue-600">%</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => navigate(`/employer/candidate/${candidate.candidateId}`)}
+                        className="bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs sm:text-sm py-3 px-5 rounded-xl flex items-center gap-2 transition-all shadow-sm active:scale-95 shrink-0"
+                      >
+                        <span>Inspect Profile</span>
+                        <ArrowRight size={15} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -118,6 +205,7 @@ export default function EmployerDashboard() {
           </div>
         )}
       </div>
+
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { candidateService } from '../services/api';
 import { 
   UploadCloud, FileText, CheckCircle, XCircle, AlertTriangle, 
   ExternalLink, ShieldCheck, Sparkles, Filter, RefreshCw, 
-  ArrowRight, ShieldAlert, Check, QrCode, Scan, Link2
+  ShieldAlert, Check, QrCode, Scan, Link2, ArrowLeft
 } from 'lucide-react';
 
 export default function ResumeVerifier({ user }) {
@@ -111,27 +111,6 @@ export default function ResumeVerifier({ user }) {
     }
   };
 
-  const handleVerifyResumeText = async (textToUse) => {
-    const text = textToUse || textInput;
-    if (!text.trim()) {
-      setResumeError('Please paste resume text or click "Load Sample Resume".');
-      return;
-    }
-    setIsProcessingResume(true);
-    setResumeError(null);
-    setResumeResults(null);
-
-    try {
-      const res = await candidateService.verifyResumeText(text);
-      setResumeResults(res.data);
-    } catch (err) {
-      console.error(err);
-      setResumeError(err.response?.data?.error || 'Failed to process resume text.');
-    } finally {
-      setIsProcessingResume(false);
-    }
-  };
-
   const handleSyncToProfile = async (title, credentialId, issuer, urlKey) => {
     if (!user || user.role !== 'CANDIDATE') {
       alert('Please log in as a candidate to sync certificates to your profile.');
@@ -142,7 +121,7 @@ export default function ResumeVerifier({ user }) {
     setSyncingBadgeId(key);
     try {
       const formData = new FormData();
-      formData.append('skillId', '1'); // Default AWS or Cloud skill
+      formData.append('skillId', '1');
       formData.append('certificateName', title || 'Verified Certificate');
       formData.append('credentialId', credentialId || key);
       formData.append('issuer', issuer || 'Accredited Authority');
@@ -158,47 +137,61 @@ export default function ResumeVerifier({ user }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 md:p-10 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in space-y-8">
       
+      {/* Top back navigation */}
+      {user && (
+        <button 
+          onClick={() => navigate(user.role === 'CANDIDATE' ? '/candidate/dashboard' : '/employer/dashboard')}
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors px-3 py-1.5 rounded-xl hover:bg-slate-100"
+        >
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
+      )}
+
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-gray-900 text-white rounded-3xl p-8 mb-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <ShieldCheck size={220} />
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden border border-slate-700/60">
+        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none select-none hidden md:block">
+          <ShieldCheck size={260} />
         </div>
-        <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 glass rounded-full text-xs font-bold tracking-wider uppercase mb-4 text-primary-300 border border-white/20">
-            <Sparkles size={14} /> ONEST Framework & Beckn Verification Pipeline
+        
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[11px] font-extrabold tracking-wider uppercase text-blue-300 border border-white/15">
+            <Sparkles size={13} /> ONEST Framework & Beckn Verification Pipeline
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">
-            Certificate & Resume Authenticity Verifier
+          
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+            Certificate & Resume Authenticity Engine
           </h1>
-          <p className="text-gray-300 text-base md:text-lg leading-relaxed mb-6">
-            Multi-layer certificate and resume verification across the ONEST network using optical QR code scanning, printed certificate ID detection, and live registry validation.
+          
+          <p className="text-xs sm:text-base text-slate-300 leading-relaxed font-normal">
+            Multi-layer verification across the ONEST network utilizing high-resolution optical QR code scanning, printed certificate ID extraction, and live decentralized registry handshakes.
           </p>
 
           {/* Tab Selector */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2.5 pt-2">
             <button
               onClick={() => setActiveTab('cert-qr')}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-xs ${
                 activeTab === 'cert-qr'
-                  ? 'bg-white text-gray-900 shadow-md ring-2 ring-primary-400'
-                  : 'bg-white/15 text-white hover:bg-white/25'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-2 ring-blue-400/50'
+                  : 'bg-white/10 text-slate-200 hover:bg-white/20'
               }`}
             >
-              <QrCode size={18} />
-              Verify Certificate (QR Code & ID)
+              <QrCode size={16} />
+              <span>Verify Certificate (QR Code & ID)</span>
             </button>
+
             <button
               onClick={() => setActiveTab('resume-upload')}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm ${
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-xs ${
                 activeTab === 'resume-upload'
-                  ? 'bg-white text-gray-900 shadow-md ring-2 ring-primary-400'
-                  : 'bg-white/15 text-white hover:bg-white/25'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 ring-2 ring-blue-400/50'
+                  : 'bg-white/10 text-slate-200 hover:bg-white/20'
               }`}
             >
-              <Link2 size={18} />
-              Resume Link Scanner
+              <Link2 size={16} />
+              <span>Resume Link Scanner</span>
             </button>
           </div>
         </div>
@@ -206,19 +199,22 @@ export default function ResumeVerifier({ user }) {
 
       {/* TAB 1: CERTIFICATE QR SCANNER */}
       {activeTab === 'cert-qr' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-6 bg-white p-6 md:p-8 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Upload Left Column */}
+          <div className="lg:col-span-6 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between space-y-6">
             <div>
-              <div className="flex items-center gap-2.5 mb-2">
-                <div className="p-2.5 bg-primary-50 text-primary-600 rounded-xl">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
                   <Scan size={22} />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">Upload Certificate File</h2>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Upload Certificate File</h2>
+                  <p className="text-xs text-slate-500">Supports PDF, PNG, JPG (Coursera, Credly, Udemy, Oracle)</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mb-6">
-                Upload any certificate document (<strong>.pdf</strong>, <strong>.png</strong>, <strong>.jpg</strong>). The scanner renders high-DPI layers, decodes embedded QR codes, and checks against official registries.
-              </p>
 
+              {/* Drag and Drop Zone */}
               <div
                 onClick={() => certInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setIsDraggingCert(true); }}
@@ -232,10 +228,10 @@ export default function ResumeVerifier({ user }) {
                     setQrResult(null);
                   }
                 }}
-                className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all mb-6 cursor-pointer relative ${
+                className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all my-5 cursor-pointer relative ${
                   isDraggingCert
-                    ? 'border-primary-500 bg-primary-50/60 ring-2 ring-primary-300'
-                    : 'border-gray-300 hover:border-primary-500 bg-gray-50/50 hover:bg-gray-50'
+                    ? 'border-blue-500 bg-blue-50/60 ring-2 ring-blue-300'
+                    : 'border-slate-300 hover:border-blue-500 bg-slate-50/50 hover:bg-slate-50'
                 }`}
               >
                 <input
@@ -246,23 +242,26 @@ export default function ResumeVerifier({ user }) {
                   onChange={handleCertFileChange}
                   className="hidden"
                 />
-                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center mx-auto mb-4 text-primary-600 transition-transform">
-                  <QrCode size={30} />
+                
+                <div className="w-14 h-14 bg-white rounded-2xl shadow-xs border border-slate-200 flex items-center justify-center mx-auto mb-3 text-blue-600">
+                  <QrCode size={26} />
                 </div>
-                <p className="font-bold text-gray-800 text-sm mb-1 pointer-events-none">
-                  {certFile ? certFile.name : 'Click to browse or drag & drop certificate here'}
+
+                <p className="font-bold text-slate-800 text-xs sm:text-sm mb-1 pointer-events-none">
+                  {certFile ? certFile.name : 'Click to browse or drop certificate file here'}
                 </p>
-                <p className="text-xs text-gray-500 mb-3 pointer-events-none">
-                  {certFile ? `${(certFile.size / 1024).toFixed(1)} KB` : 'Supports PDF, PNG, JPG (Coursera, Credly, Udemy, Oracle, etc.)'}
+                <p className="text-xs text-slate-400 mb-3 pointer-events-none">
+                  {certFile ? `${(certFile.size / 1024).toFixed(1)} KB` : 'Optical recognition extracts QR and printed ID layers'}
                 </p>
-                <span className="inline-block text-xs font-semibold px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg border border-primary-200 hover:bg-primary-100 transition-colors pointer-events-none">
-                  {certFile ? 'Change File' : 'Browse File'}
+                
+                <span className="inline-block text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 pointer-events-none">
+                  {certFile ? 'Change Certificate' : 'Browse File'}
                 </span>
               </div>
 
               {certError && (
-                <div className="p-4 bg-red-50 text-red-700 text-sm rounded-xl mb-4 border border-red-200 flex items-start gap-2">
-                  <ShieldAlert size={18} className="shrink-0 mt-0.5 text-red-600" />
+                <div className="p-3.5 bg-red-50 text-red-700 text-xs rounded-xl mb-4 border border-red-200 flex items-start gap-2">
+                  <ShieldAlert size={16} className="shrink-0 mt-0.5 text-red-600" />
                   <span>{certError}</span>
                 </div>
               )}
@@ -271,31 +270,31 @@ export default function ResumeVerifier({ user }) {
             <button
               onClick={handleScanCertificate}
               disabled={isScanningCert || !certFile}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-primary-500/20 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.99]"
             >
               {isScanningCert ? (
                 <>
-                  <RefreshCw size={18} className="animate-spin" />
-                  Scanning & Verifying Document...
+                  <RefreshCw size={16} className="animate-spin" />
+                  <span>Scanning & Rasterizing Document...</span>
                 </>
               ) : (
                 <>
-                  <Scan size={18} />
-                  Scan & Verify Certificate File
+                  <Scan size={16} />
+                  <span>Scan & Verify Certificate Document</span>
                 </>
               )}
             </button>
 
             {/* Direct Certificate ID / QR Link Fallback */}
-            <div className="pt-4 border-t border-gray-100">
-              <label className="text-xs uppercase tracking-wider text-gray-500 font-bold block mb-1.5">
-                Or Verify via Certificate ID / Verification URL
+            <div className="pt-5 border-t border-slate-100">
+              <label className="text-[11px] uppercase tracking-wider text-slate-500 font-bold block mb-1.5">
+                Manual Verification via Certificate ID or URL
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="e.g. 798b8316-2680-4d47-9e95-90bd2c424455 or https://..."
-                  className="flex-1 px-3.5 py-2.5 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="flex-1 px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.target.value.trim()) {
                       handleTestQrPayload(e.target.value.trim());
@@ -311,56 +310,54 @@ export default function ResumeVerifier({ user }) {
                       handleTestQrPayload(el.value.trim());
                     }
                   }}
-                  className="px-4 py-2.5 bg-gray-900 hover:bg-primary-600 text-white text-xs font-bold rounded-xl transition-colors shrink-0"
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-colors shrink-0"
                 >
                   Verify ID
                 </button>
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Tip: If your certificate was compressed by WhatsApp, you can type the printed Cert ID directly.
-              </p>
             </div>
           </div>
 
           {/* QR Verification Results Panel */}
           <div className="lg:col-span-6">
             {qrResult ? (
-              <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 md:p-8 animate-fade-in">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <ShieldCheck className="text-primary-600" size={22} />
+              <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 sm:p-8 animate-fade-in space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <ShieldCheck className="text-blue-600" size={20} />
                     Authenticity Verdict
                   </h3>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  
+                  <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider border ${
                     (qrResult.isValid ?? qrResult.valid)
-                      ? 'bg-green-100 text-green-800 border border-green-300'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                       : qrResult.status === 'NO QR FOUND'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                      : 'bg-red-100 text-red-800 border border-red-300'
+                      ? 'bg-amber-50 text-amber-800 border-amber-300'
+                      : 'bg-red-50 text-red-800 border-red-300'
                   }`}>
                     {qrResult.status}
                   </span>
                 </div>
 
-                {/* Verdict Card */}
-                <div className={`p-5 rounded-2xl border mb-6 ${
+                {/* Verdict Detail Card */}
+                <div className={`p-5 rounded-2xl border ${
                   (qrResult.isValid ?? qrResult.valid)
-                    ? 'bg-green-50/70 border-green-200'
+                    ? 'bg-emerald-50/70 border-emerald-200'
                     : qrResult.status === 'NO QR FOUND'
                     ? 'bg-amber-50/70 border-amber-200'
                     : 'bg-red-50/70 border-red-200'
                 }`}>
                   <div className="flex items-start gap-3">
                     {(qrResult.isValid ?? qrResult.valid) ? (
-                      <CheckCircle className="text-green-600 shrink-0 mt-0.5" size={24} />
+                      <CheckCircle className="text-emerald-600 shrink-0 mt-0.5" size={22} />
                     ) : (
-                      <XCircle className="text-red-600 shrink-0 mt-0.5" size={24} />
+                      <XCircle className="text-red-600 shrink-0 mt-0.5" size={22} />
                     )}
                     <div>
-                      <p className="font-extrabold text-gray-900 text-base">
+                      <p className="font-extrabold text-slate-900 text-sm sm:text-base">
                         {qrResult.certificateTitle || qrResult.issuer || 'Verification Result'}
                       </p>
-                      <p className="text-sm text-gray-700 mt-1 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-slate-700 mt-1 leading-relaxed">
                         {qrResult.verificationDetails}
                       </p>
                     </div>
@@ -369,21 +366,21 @@ export default function ResumeVerifier({ user }) {
 
                 {/* QR Payload Details */}
                 {qrResult.qrPayload && (
-                  <div className="mb-6">
-                    <label className="text-xs uppercase tracking-wider text-gray-400 font-bold block mb-1">
+                  <div>
+                    <label className="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
                       Decoded QR Payload Content
                     </label>
-                    <div className="bg-gray-50 border border-gray-200 p-3 rounded-xl font-mono text-xs text-gray-800 break-all flex items-center justify-between gap-2">
+                    <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl font-mono text-xs text-slate-800 break-all flex items-center justify-between gap-2">
                       <span>{qrResult.qrPayload}</span>
                       {qrResult.qrPayload.startsWith('http') && (
                         <a
                           href={qrResult.qrPayload}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary-600 hover:text-primary-700 shrink-0"
+                          className="text-blue-600 hover:text-blue-700 shrink-0"
                           title="Open URL"
                         >
-                          <ExternalLink size={16} />
+                          <ExternalLink size={15} />
                         </a>
                       )}
                     </div>
@@ -392,28 +389,12 @@ export default function ResumeVerifier({ user }) {
 
                 {/* Detected Printed Certificate ID */}
                 {qrResult.extractedCertId && (
-                  <div className="mb-6">
-                    <label className="text-xs uppercase tracking-wider text-gray-400 font-bold block mb-1">
+                  <div>
+                    <label className="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">
                       Printed Certificate ID / Serial
                     </label>
                     <div className="bg-indigo-50 border border-indigo-200 p-3 rounded-xl font-mono text-xs text-indigo-900 font-bold">
                       {qrResult.extractedCertId}
-                    </div>
-                  </div>
-                )}
-
-                {/* Detected Features Badge List */}
-                {qrResult.detectedFeatures && qrResult.detectedFeatures.length > 0 && (
-                  <div className="mb-6">
-                    <label className="text-xs uppercase tracking-wider text-gray-400 font-bold block mb-2">
-                      Detection Analysis & Features
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {qrResult.detectedFeatures.map((feat, idx) => (
-                        <span key={idx} className="bg-gray-100 border border-gray-200 text-gray-700 text-xs px-2.5 py-1 rounded-lg">
-                          {feat}
-                        </span>
-                      ))}
                     </div>
                   </div>
                 )}
@@ -423,15 +404,15 @@ export default function ResumeVerifier({ user }) {
                   <button
                     onClick={() => handleSyncToProfile(qrResult.certificateTitle, qrResult.credentialId, qrResult.issuer, qrResult.qrPayload)}
                     disabled={syncingBadgeId === (qrResult.qrPayload || qrResult.credentialId) || syncedBadges[qrResult.qrPayload || qrResult.credentialId]}
-                    className={`w-full font-bold py-3 px-5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all ${
+                    className={`w-full font-bold py-3 px-5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all ${
                       syncedBadges[qrResult.qrPayload || qrResult.credentialId]
                         ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 active:scale-95'
                     }`}
                   >
                     {syncedBadges[qrResult.qrPayload || qrResult.credentialId] ? (
                       <>
-                        <Check size={16} /> Synchronized to Profile
+                        <Check size={16} /> Synchronized to Unified Profile
                       </>
                     ) : syncingBadgeId === (qrResult.qrPayload || qrResult.credentialId) ? (
                       <>
@@ -446,11 +427,11 @@ export default function ResumeVerifier({ user }) {
                 )}
               </div>
             ) : (
-              <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center h-full flex flex-col items-center justify-center text-gray-400">
-                <QrCode size={48} className="mb-3 text-gray-300" />
-                <p className="font-bold text-gray-600 text-base mb-1">No Scan Results Yet</p>
-                <p className="text-xs text-gray-400 max-w-sm">
-                  Upload a certificate on the left or use "Quick Test with Samples" to test authentic vs. fake certificate QR codes.
+              <div className="bg-white border border-dashed border-slate-300 rounded-3xl p-12 text-center h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
+                <QrCode size={44} className="text-slate-300" />
+                <p className="font-bold text-slate-700 text-sm">No Scan Results Yet</p>
+                <p className="text-xs text-slate-400 max-w-sm">
+                  Upload a certificate on the left to extract QR codes and verify against authoritative ONEST registries.
                 </p>
               </div>
             )}
@@ -461,16 +442,16 @@ export default function ResumeVerifier({ user }) {
       {/* TAB 2: RESUME LINK SCANNER */}
       {activeTab === 'resume-upload' && (
         <div className="space-y-8">
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-200 shadow-sm">
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="p-2.5 bg-primary-50 text-primary-600 rounded-xl">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-xs space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
                 <FileText size={22} />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Upload Resume Document</h2>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Upload Resume Document</h2>
+                <p className="text-xs text-slate-500">Extracts certificate URLs while filtering out LinkedIn, GitHub, and portfolios</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 mb-6">
-              Upload your resume (<strong>.pdf</strong> or <strong>.txt</strong>). The parser extracts visible and clickable certificate links while filtering out personal LinkedIn profiles, GitHub repos, and portfolios.
-            </p>
 
             <div
               onClick={() => resumeInputRef.current?.click()}
@@ -485,10 +466,10 @@ export default function ResumeVerifier({ user }) {
                   setResumeResults(null);
                 }
               }}
-              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all mb-6 cursor-pointer relative ${
+              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer relative ${
                 isDraggingResume
-                  ? 'border-primary-500 bg-primary-50/60 ring-2 ring-primary-300'
-                  : 'border-gray-300 hover:border-primary-500 bg-gray-50/50 hover:bg-gray-50'
+                  ? 'border-blue-500 bg-blue-50/60 ring-2 ring-blue-300'
+                  : 'border-slate-300 hover:border-blue-500 bg-slate-50/50 hover:bg-slate-50'
               }`}
             >
               <input
@@ -499,23 +480,23 @@ export default function ResumeVerifier({ user }) {
                 onChange={handleResumeFileChange}
                 className="hidden"
               />
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center mx-auto mb-4 text-primary-600 transition-transform">
-                <UploadCloud size={30} />
+              <div className="w-14 h-14 bg-white rounded-2xl shadow-xs border border-slate-200 flex items-center justify-center mx-auto mb-3 text-blue-600">
+                <UploadCloud size={28} />
               </div>
-              <p className="font-bold text-gray-800 text-sm mb-1 pointer-events-none">
-                {resumeFile ? resumeFile.name : 'Click to browse or drag & drop your Resume PDF'}
+              <p className="font-bold text-slate-800 text-xs sm:text-sm mb-1 pointer-events-none">
+                {resumeFile ? resumeFile.name : 'Click to browse or drop your Resume PDF'}
               </p>
-              <p className="text-xs text-gray-500 mb-3 pointer-events-none">
+              <p className="text-xs text-slate-400 mb-3 pointer-events-none">
                 {resumeFile ? `${(resumeFile.size / 1024).toFixed(1)} KB` : 'Supports PDF documents with embedded links'}
               </p>
-              <span className="inline-block text-xs font-semibold px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg border border-primary-200 hover:bg-primary-100 transition-colors pointer-events-none">
+              <span className="inline-block text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 pointer-events-none">
                 {resumeFile ? 'Change File' : 'Browse File'}
               </span>
             </div>
 
             {resumeError && (
-              <div className="p-4 bg-red-50 text-red-700 text-sm rounded-xl mb-4 border border-red-200 flex items-start gap-2">
-                <ShieldAlert size={18} className="shrink-0 mt-0.5 text-red-600" />
+              <div className="p-3.5 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200 flex items-start gap-2">
+                <ShieldAlert size={16} className="shrink-0 mt-0.5 text-red-600" />
                 <span>{resumeError}</span>
               </div>
             )}
@@ -523,17 +504,17 @@ export default function ResumeVerifier({ user }) {
             <button
               onClick={handleVerifyResumeFile}
               disabled={isProcessingResume || !resumeFile}
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-primary-500/20 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-xs sm:text-sm"
             >
               {isProcessingResume ? (
                 <>
-                  <RefreshCw size={18} className="animate-spin" />
-                  Extracting & Verifying Links...
+                  <RefreshCw size={16} className="animate-spin" />
+                  <span>Extracting & Verifying Links...</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={18} />
-                  Extract & Verify Resume Links
+                  <ShieldCheck size={16} />
+                  <span>Extract & Verify Resume Links</span>
                 </>
               )}
             </button>
@@ -542,84 +523,77 @@ export default function ResumeVerifier({ user }) {
           {/* Resume Extraction Results */}
           {resumeResults && (
             <div className="space-y-6 animate-fade-in">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-                  <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Total Links Found</p>
-                  <p className="text-3xl font-extrabold text-gray-900">{resumeResults.totalLinksFound}</p>
-                  <p className="text-xs text-gray-400 mt-1">URLs detected in resume</p>
+              
+              {/* Stats Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Total Links Found</p>
+                  <p className="text-3xl font-black text-slate-900">{resumeResults.totalLinksFound}</p>
                 </div>
-                <div className="bg-green-50 p-5 rounded-2xl border border-green-200 shadow-sm">
-                  <p className="text-xs uppercase tracking-wider text-green-700 font-bold mb-1">Verified Certificates</p>
-                  <p className="text-3xl font-extrabold text-green-600">{resumeResults.validCertificatesCount}</p>
-                  <p className="text-xs text-green-700 mt-1">Active on issuer registry</p>
+                <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200 shadow-xs">
+                  <p className="text-[11px] uppercase tracking-wider text-emerald-700 font-bold mb-1">Verified Badges</p>
+                  <p className="text-3xl font-black text-emerald-600">{resumeResults.validCertificatesCount}</p>
                 </div>
-                <div className="bg-red-50 p-5 rounded-2xl border border-red-200 shadow-sm">
-                  <p className="text-xs uppercase tracking-wider text-red-700 font-bold mb-1">Invalid / Revoked</p>
-                  <p className="text-3xl font-extrabold text-red-600">{resumeResults.invalidCertificatesCount}</p>
-                  <p className="text-xs text-red-700 mt-1">Revoked or 404 blocked</p>
+                <div className="bg-red-50/70 p-5 rounded-2xl border border-red-200 shadow-xs">
+                  <p className="text-[11px] uppercase tracking-wider text-red-700 font-bold mb-1">Invalid / Revoked</p>
+                  <p className="text-3xl font-black text-red-600">{resumeResults.invalidCertificatesCount}</p>
                 </div>
-                <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
-                  <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Filtered Out Links</p>
-                  <p className="text-3xl font-extrabold text-gray-700">{resumeResults.ignoredLinks?.length || 0}</p>
-                  <p className="text-xs text-gray-400 mt-1">GitHub, LinkedIn profile, etc.</p>
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-xs">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Filtered Out</p>
+                  <p className="text-3xl font-black text-slate-700">{resumeResults.ignoredLinks?.length || 0}</p>
                 </div>
               </div>
 
-              {/* Certificate Cards */}
-              <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
-                      <ShieldCheck className="text-primary-600" size={24} />
-                      Extracted Resume Certificate Links ({resumeResults.extractedCertificates?.length || 0})
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      Extracted specifically using domain & path whitelisting from the resume.
-                    </p>
-                  </div>
+              {/* Extracted Certificate Cards */}
+              <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <ShieldCheck className="text-blue-600" size={20} />
+                    Extracted Resume Credentials ({resumeResults.extractedCertificates?.length || 0})
+                  </h2>
                 </div>
 
                 {resumeResults.extractedCertificates?.length === 0 ? (
-                  <div className="p-10 text-center text-gray-500">
-                    <AlertTriangle size={36} className="mx-auto text-yellow-500 mb-2" />
-                    <p className="font-semibold">No certificate links found in the uploaded document.</p>
+                  <div className="p-10 text-center text-slate-400 space-y-2">
+                    <AlertTriangle size={32} className="mx-auto text-amber-500" />
+                    <p className="font-semibold text-sm text-slate-700">No credential URLs identified in this document.</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-slate-100">
                     {resumeResults.extractedCertificates.map((cert, index) => {
                       const certValid = cert.isValid ?? cert.valid;
                       return (
-                        <div key={index} className="p-6 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div key={index} className="p-5 sm:p-6 hover:bg-slate-50/60 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="flex items-start gap-4">
-                            <div className="p-3 rounded-2xl bg-gray-50 border border-gray-200 shrink-0">
+                            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 shrink-0">
                               {certValid ? (
-                                <CheckCircle className="text-green-600" size={24} />
+                                <CheckCircle className="text-emerald-600" size={20} />
                               ) : (
-                                <XCircle className="text-red-600" size={24} />
+                                <XCircle className="text-red-600" size={20} />
                               )}
                             </div>
                             <div>
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="font-extrabold text-gray-900 text-base">
+                                <span className="font-bold text-slate-900 text-sm sm:text-base">
                                   {cert.title || cert.issuer + ' Credential'}
                                 </span>
-                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
                                   certValid
-                                    ? 'bg-green-100 text-green-800 border border-green-200'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                                     : 'bg-red-100 text-red-800 border border-red-200'
                                 }`}>
                                   {cert.status}
                                 </span>
-                                <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-md font-semibold">
+                                <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-md font-semibold">
                                   {cert.issuer}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-500 mb-2">{cert.verificationDetails}</p>
+                              <p className="text-xs text-slate-500 mb-1">{cert.verificationDetails}</p>
                               <a
                                 href={cert.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-700 font-mono break-all hover:underline"
+                                className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-mono break-all hover:underline"
                               >
                                 {cert.url}
                                 <ExternalLink size={12} />
@@ -632,29 +606,29 @@ export default function ResumeVerifier({ user }) {
                               <button
                                 onClick={() => handleSyncToProfile(cert.title, cert.badgeId, cert.issuer, cert.url)}
                                 disabled={syncingBadgeId === cert.url || syncedBadges[cert.url]}
-                                className={`font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition-all ${
+                                className={`font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all ${
                                   syncedBadges[cert.url]
                                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default'
-                                    : 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                                 }`}
                               >
                                 {syncedBadges[cert.url] ? (
                                   <>
-                                    <Check size={14} /> Synced to Profile
+                                    <Check size={13} /> Synced to Profile
                                   </>
                                 ) : syncingBadgeId === cert.url ? (
                                   <>
-                                    <RefreshCw size={14} className="animate-spin" /> Syncing...
+                                    <RefreshCw size={13} className="animate-spin" /> Syncing...
                                   </>
                                 ) : (
                                   <>
-                                    <ShieldCheck size={14} /> Sync to Profile
+                                    <ShieldCheck size={13} /> Sync to Profile
                                   </>
                                 )}
                               </button>
                             ) : (
-                              <span className="text-xs font-semibold text-red-600 px-3 py-1.5 bg-red-50 rounded-xl border border-red-200">
-                                Untrusted
+                              <span className="text-xs font-semibold text-red-600 px-3 py-1 bg-red-50 rounded-lg border border-red-200">
+                                Unverified
                               </span>
                             )}
                           </div>
@@ -665,22 +639,23 @@ export default function ResumeVerifier({ user }) {
                 )}
               </div>
 
-              {/* Ignored / Filtered Links */}
-              <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <Filter size={16} /> Filtered Non-Certificate Links
+              {/* Filtered Out Links */}
+              <div className="bg-white rounded-2xl border border-slate-200/90 p-5 space-y-2">
+                <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Filter size={14} /> Filtered Non-Credential URLs
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {resumeResults.ignoredLinks?.map((item, idx) => (
-                    <span key={idx} className="bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-mono shadow-sm">
+                    <span key={idx} className="bg-slate-50 border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-xs font-mono">
                       {item}
                     </span>
                   ))}
                   {resumeResults.ignoredLinks?.length === 0 && (
-                    <span className="text-xs text-gray-400">No other links detected.</span>
+                    <span className="text-xs text-slate-400">No external non-credential links found.</span>
                   )}
                 </div>
               </div>
+
             </div>
           )}
         </div>

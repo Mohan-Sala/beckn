@@ -28,8 +28,13 @@ function App() {
   return (
     <BrowserRouter>
       {user && <Navbar user={user} onLogout={handleLogout} />}
-      <div className="min-h-screen bg-gray-50">
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div></div>}>
+      <div className="min-h-screen bg-slate-50/70 text-slate-900 selection:bg-blue-500 selection:text-white">
+        <Suspense fallback={
+          <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Loading BecknVerify...</p>
+          </div>
+        }>
           <Routes>
             <Route path="/" element={!user ? <Login onLogin={handleLogin} /> : <Navigate to={user.role === 'CANDIDATE' ? '/candidate/dashboard' : '/employer/dashboard'} />} />
             <Route path="/verify-badge" element={<BadgeVerify user={user} />} />

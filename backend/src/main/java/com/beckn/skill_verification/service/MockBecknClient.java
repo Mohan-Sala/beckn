@@ -53,7 +53,7 @@ public class MockBecknClient implements BecknClient {
         scheduler.schedule(() -> {
             try {
                 BecknController controller = applicationContext.getBean(BecknController.class);
-                controller.handleOnConfirm(transactionId, "Verification CONFIRMED", 85);
+                controller.handleOnConfirm(transactionId, "VERIFIED", 95);
             } catch (Exception e) {
                 log.error("Failed to simulate on_confirm", e);
             }

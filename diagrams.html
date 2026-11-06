@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beckn Skill Verification - Architecture & Workflow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#121212',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f8fafc',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#94a3b8',
+        secondaryColor: '#0f172a',
+        tertiaryColor: '#1e1b4b'
+      }
+    });
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1100px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #38bdf8;
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 40px;
+      font-size: 1.05rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      border: 1px solid #334155;
+    }
+    .card h2 {
+      margin-top: 0;
+      color: #7dd3fc;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 12px;
+      font-size: 1.4rem;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    .print-btn {
+      display: block;
+      margin: 0 auto 30px auto;
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .print-btn:hover {
+      background: #0369a1;
+    }
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+        padding: 0;
+      }
+      .print-btn {
+        display: none;
+      }
+      .card {
+        background: #ffffff;
+        border: 1px solid #ccc;
+        box-shadow: none;
+        page-break-after: always;
+      }
+      .card h2 {
+        color: #0f172a;
+        border-bottom: 1px solid #ddd;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+
+    <h1>Beckn & ONEST Skill Verification Platform</h1>
+    <p class="subtitle">System Architecture & End-to-End Verification Workflow</p>
+
+    <!-- Diagram 1 -->
+    <div class="card">
+      <h2>1. System Architecture Diagram</h2>
+      <div class="mermaid">
+flowchart TD
+    subgraph Users ["1. Users & Client Layer"]
+        Recruiter["Recruiter / Employer"]
+        Candidate["Candidate / Student"]
+        UI["React Web Application\n(Dashboard, Upload, Real-Time Polling)"]
+    end
+
+    subgraph BAP ["2. Backend & BAP Platform (Spring Boot)"]
+        API["REST Controllers\n(Auth, Candidates, Verification)"]
+        DB[("Database\n(B-Tree Indexed Transactions & Audits)")]
+        Scanner["Optical QR Engine\n(PDFBox + ZXing Validation)"]
+        BecknEngine["Beckn Protocol Engine\n(RFC 8032 Ed25519 Signer)"]
+    end
+
+    subgraph Network ["3. Decentralized ONEST / Beckn Network"]
+        Gateway["Beckn Open Gateway\n(domain: onest:work-opportunities)"]
+        BPP["Beckn Provider Platform (BPP)\n(Universities / Credential Issuers)"]
+    end
+
+    Recruiter -->|Views Verification & Audit Trail| UI
+    Candidate -->|Uploads Certificate & Gives Consent| UI
+    UI -->|HTTPS REST API| API
+
+    API -->|Stores Records & Status| DB
+    API -->|Extracts QR & Cert ID| Scanner
+    API -->|Constructs Signed Envelopes| BecknEngine
+
+    BecknEngine -->|/search, /init, /confirm| Gateway
+    Gateway -->|/on_search, /on_init, /on_confirm| BPP
+      </div>
+    </div>
+
+    <!-- Diagram 2 -->
+    <div class="card">
+      <h2>2. End-to-End Verification Workflow</h2>
+      <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor User as Candidate / Recruiter
+    participant UI as React Frontend
+    participant BAP as BAP (Spring Boot)
+    participant QR as Optical QR Engine
+    participant GW as Beckn Gateway
+    participant BPP as Issuer BPP (University)
+
+    %% Phase 1
+    Note over User,QR: Phase 1: Upload & Local Authenticity Check
+    User->>UI: Uploads Certificate (PDF/Image) + Consent
+    UI->>BAP: POST /api/candidates/upload
+    BAP->>QR: Scan document with PDFBox & ZXing
+    QR-->>BAP: Extracted QR Payload & Certificate ID
+    BAP-->>UI: Upload Success (Ready for Network Verification)
+
+    %% Phase 2
+    Note over UI,BPP: Phase 2: ONEST Decentralized Handshake
+    User->>UI: Clicks "Initiate Verification"
+    UI->>BAP: POST /api/verification/initiate
+    Note over BAP: Sign payload with Ed25519 Private Key
+    BAP->>GW: POST /search (domain: "onest:work-opportunities")
+    GW->>BPP: Broadcast /search
+    BPP-->>GW: ACK (HTTP 200)
+    BPP->>BAP: POST /on_search (Catalog of Issuers)
+
+    %% Phase 3
+    Note over BAP,BPP: Phase 3: Contract Finalization
+    BAP->>BPP: POST /init (Candidate Details & Consent Artifact)
+    BPP->>BAP: POST /on_init (Order Terms Initialized)
+    BAP->>BPP: POST /confirm (Final Verification Request)
+    BPP->>BAP: POST /on_confirm (Verified Credential Status)
+
+    %% Phase 4
+    Note over UI,BAP: Phase 4: Scoring & Result Presentation
+    BAP->>BAP: Compute score (Capped at 95%) & save audit record
+    loop Poll Status (Every 1s)
+        UI->>BAP: GET /api/verification/status/{id}
+        BAP-->>UI: Return "VERIFIED" + Score + Issuer Details
+    end
+    UI-->>User: Displays Authenticated Badge & Confidence Score
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
+

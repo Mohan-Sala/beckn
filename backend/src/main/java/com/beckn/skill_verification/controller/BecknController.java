@@ -91,7 +91,7 @@ public class BecknController {
         if (payload != null && payload.getContext() != null) {
             String txId = payload.getContext().getTransactionId();
             String status = "VERIFIED";
-            int score = 85;
+            int score = 95;
 
             try {
                 if (payload.getMessage() != null && payload.getMessage().getOrder() != null) {

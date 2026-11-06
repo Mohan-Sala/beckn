@@ -184,12 +184,16 @@ public class VerificationService {
             return;
         }
         
-        boolean isApproved = "VERIFIED".equalsIgnoreCase(verificationStatus) || score >= 70;
+        boolean isApproved = "VERIFIED".equalsIgnoreCase(verificationStatus)
+                || "CONFIRMED".equalsIgnoreCase(verificationStatus)
+                || (verificationStatus != null && verificationStatus.toUpperCase().contains("VERIFIED"))
+                || (verificationStatus != null && verificationStatus.toUpperCase().contains("CONFIRM"))
+                || score >= 70;
         // Strictly less than 100 (capped at 95% maximum for approved, 20% for unapproved)
-        int totalScore = isApproved ? Math.min(Math.max(score, 85), 95) : Math.min(score, 20);
+        int totalScore = isApproved ? Math.min(Math.max(score, 90), 95) : Math.min(score, 20);
         
         String competency = isApproved ? (totalScore >= 90 ? "Advanced" : "Intermediate") : "Unverified";
-        String finalStatus = isApproved ? (totalScore >= 90 ? "VERIFIED" : "PARTIALLY VERIFIED") : "NOT VERIFIED";
+        String finalStatus = isApproved ? "VERIFIED" : "NOT VERIFIED";
         
         history.setStatus(finalStatus);
         history.setConfidence(totalScore);
