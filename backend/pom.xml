@@ -79,6 +79,19 @@
 			<version>3.5.3</version>
 		</dependency>
 
+		<!-- BouncyCastle for Beckn Protocol Ed25519 Signatures and BLAKE-512 Digests -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.78.1</version>
+		</dependency>
+
+		<!-- Jackson Databind for Beckn JSON Serializer -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>

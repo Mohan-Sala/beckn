@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name = "verification_record", indexes = {
+    @Index(name = "idx_vr_candidate_skill", columnList = "candidateId, skillId")
+})
 public class VerificationRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

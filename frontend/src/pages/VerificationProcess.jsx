@@ -37,39 +37,55 @@ export default function VerificationProcess({ user }) {
   const handleVerify = async () => {
     if (!consent) return;
     setIsVerifying(true);
-    setProgress(10); // Start
+    setProgress(15); // Start
 
     try {
       await verificationService.giveConsent(user.id, skillId);
       await verificationService.verifySkill(user.id, skillId);
       
+      let attempts = 0;
+      const maxAttempts = 12; // Max 12 seconds
+
       // Poll the backend until the state is no longer REQUESTED, DISCOVERING, INITIALIZED
       const pollInterval = setInterval(async () => {
+        attempts++;
         try {
           const res = await verificationService.getResult(user.id, skillId);
-          const status = res.data.status;
+          const status = res.data ? res.data.status : null;
           
           if (status === 'REQUESTED') {
-            setProgress(30);
+            setProgress(35);
           } else if (status === 'DISCOVERING') {
-            setProgress(50);
+            setProgress(55);
           } else if (status === 'INITIALIZED') {
             setProgress(80);
-          } else {
-            // VERIFIED, PARTIALLY VERIFIED, NOT VERIFIED
+          } else if (status === 'VERIFIED' || status === 'PARTIALLY VERIFIED' || status === 'NOT VERIFIED') {
             setProgress(100);
             clearInterval(pollInterval);
             setTimeout(() => {
               navigate(`/candidate/result/${skillId}`);
-            }, 500);
+            }, 400);
+            return;
+          }
+
+          if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            setProgress(100);
+            setTimeout(() => {
+              navigate(`/candidate/result/${skillId}`);
+            }, 400);
           }
         } catch (pollErr) {
           console.error("Polling error", pollErr);
+          if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            setIsVerifying(false);
+          }
         }
-      }, 1500);
+      }, 1000);
       
     } catch (err) {
-      alert('Verification initiation failed');
+      alert('Verification initiation failed. Please ensure a credential is attached.');
       setIsVerifying(false);
     }
   };

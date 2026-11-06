@@ -211,8 +211,11 @@ erDiagram
 - Distinguishes between verifiable issuer URLs (e.g. Credly, Coursera) and generic links.
 
 ### 3. ONEST & Beckn Protocol Transaction Engine
-- Simulates the complete asynchronous BAP/BPP handshake (`search`, `select`, `init`, `confirm`).
-- Persists all network transactions in `beckn_transaction` for tamper-evident audit trails.
+- **Full Beckn v1.1.0 Protocol Engine:** Implements the official Beckn specifications (`context`, `intent`, `catalog`, `order`, `ack`) under domain taxonomy `onest:work-opportunities`.
+- **Ed25519 Cryptographic Signatures:** RFC-compliant HTTP Authorization signatures with `created`, `expires`, and `Digest: SHA-256=<base64>` header hashing.
+- **Real HTTP Network Transport:** `RealBecknClient` dispatches real HTTP POST requests with asymmetric signatures and handles asynchronous BAP/BPP callbacks (`/on_search`, `/on_init`, `/on_confirm`).
+- **Embedded ONEST BPP Provider Node:** Includes an embedded Provider node (`/api/bpp/search`, `/init`, `/confirm`) enabling realistic multi-node network simulation on localhost or external gateways via ngrok.
+- **Audit Trails:** Persists every network transaction in `beckn_transaction` for tamper-evident transparency.
 
 ### 4. Employer Talent Discovery Portal
 - Search candidates by skill with real-time filtering.
@@ -222,9 +225,9 @@ erDiagram
 
 ## 🛠️ Technology Stack
 
-- **Backend:** Java 17/21, Spring Boot 3, Spring Data JPA, Hibernate, Apache PDFBox, ZXing (Zebra Crossing) 3.5.3, MySQL 8.0.
+- **Backend:** Java 17/21, Spring Boot 3, Spring Data JPA, Hibernate, BouncyCastle (Ed25519 Cryptography), Apache PDFBox, ZXing (Zebra Crossing) 3.5.3, Jackson Databind, MySQL 8.0.
 - **Frontend:** React 18, Vite, Tailwind CSS, Lucide Icons, Axios, Canvas Confetti.
-- **Standards:** Beckn Protocol Specification, ONEST Framework Taxonomy.
+- **Protocols & Standards:** Beckn Protocol Core Specification v1.1.0, ONEST Framework Taxonomy (`onest:work-opportunities`), RFC 8032 (Ed25519 Signatures), RFC 7230 (HTTP Signatures).
 
 ---
 

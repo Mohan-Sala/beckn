@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface BecknTransactionRepository extends JpaRepository<BecknTransaction, Long> {
-    Optional<BecknTransaction> findByTransactionIdAndAction(String transactionId, String action);
+    java.util.List<BecknTransaction> findByTransactionIdAndAction(String transactionId, String action);
+    Optional<BecknTransaction> findFirstByTransactionIdAndActionOrderByIdDesc(String transactionId, String action);
     Optional<BecknTransaction> findByMessageId(String messageId);
 }

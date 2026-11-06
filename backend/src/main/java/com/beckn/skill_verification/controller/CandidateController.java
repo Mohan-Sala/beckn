@@ -51,13 +51,29 @@ public class CandidateController {
         credential.setStatus("UPLOADED");
         
         if (file != null && !file.isEmpty()) {
-            String uploadDir = "uploads/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) dir.mkdirs();
-            String filePath = uploadDir + file.getOriginalFilename();
-            Path path = Paths.get(filePath);
-            Files.write(path, file.getBytes());
-            credential.setFilePath(filePath);
+            String rawFilename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "credential.pdf";
+            String cleanFilename = Paths.get(rawFilename).getFileName().toString().replaceAll("[^a-zA-Z0-9._-]", "_");
+            String ext = cleanFilename.contains(".") ? cleanFilename.substring(cleanFilename.lastIndexOf(".")).toLowerCase() : "";
+            
+            // Strict extension whitelisting for security (prevent arbitrary file execution)
+            if (!java.util.List.of(".pdf", ".png", ".jpg", ".jpeg", ".webp").contains(ext)) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            // Path traversal protection (CWE-22) and unique file naming
+            String safeFileName = java.util.UUID.randomUUID().toString() + "_" + cleanFilename;
+            Path targetPath = uploadDir.resolve(safeFileName).normalize();
+            if (!targetPath.startsWith(uploadDir)) {
+                throw new SecurityException("Directory traversal attempt blocked");
+            }
+
+            Files.write(targetPath, file.getBytes());
+            credential.setFilePath("uploads/" + safeFileName);
         }
         
         return ResponseEntity.ok(credentialRepository.save(credential));

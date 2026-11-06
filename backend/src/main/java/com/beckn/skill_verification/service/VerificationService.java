@@ -107,54 +107,89 @@ public class VerificationService {
 
     // Callbacks from BecknController
     public void processOnSearch(String transactionId, String providerId) {
-        BecknTransaction tx = becknTransactionRepository.findByTransactionIdAndAction(transactionId, "search").orElseThrow();
-        tx.setStatus("ACK");
-        becknTransactionRepository.save(tx);
+        BecknTransaction tx = becknTransactionRepository.findFirstByTransactionIdAndActionOrderByIdDesc(transactionId, "search").orElse(null);
+        if (tx != null) {
+            tx.setStatus("ACK");
+            becknTransactionRepository.save(tx);
+        }
         
-        VerificationHistory history = verificationHistoryRepository.findAll().stream().filter(h -> transactionId.equals(h.getTransactionId())).findFirst().orElseThrow();
+        VerificationHistory history = verificationHistoryRepository.findFirstByTransactionIdOrderByCreatedAtDesc(transactionId)
+                .orElse(null);
+        if (history == null) {
+            log.warn("processOnSearch: No history found for transaction {}", transactionId);
+            return;
+        }
+
         history.setStatus("DISCOVERING");
+        history.setProvider(providerId);
         verificationHistoryRepository.save(history);
         
         VerificationRecord record = verificationRecordRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId());
-        record.setFinalStatus("DISCOVERING");
-        record.setCredentialStatus("PROVIDER_SELECTED");
-        verificationRecordRepository.save(record);
+        if (record != null) {
+            record.setFinalStatus("DISCOVERING");
+            record.setCredentialStatus("PROVIDER_SELECTED");
+            verificationRecordRepository.save(record);
+        }
         
         updateCandidateSkillStatus(history.getCandidateId(), history.getSkillId(), "DISCOVERING", 0, "UNKNOWN");
         
+        Credential credential = credentialRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId()).orElse(null);
+        String credId = (credential != null && credential.getCredentialId() != null) ? credential.getCredentialId() : "N/A";
+
         BecknClient client = "REAL".equalsIgnoreCase(integrationMode) ? realBecknClient : mockBecknClient;
-        client.init(transactionId, providerId, "CRED-XXX");
+        client.init(transactionId, providerId, credId);
     }
 
     public void processOnInit(String transactionId) {
-        BecknTransaction tx = becknTransactionRepository.findByTransactionIdAndAction(transactionId, "search").orElseThrow();
+        BecknTransaction tx = becknTransactionRepository.findFirstByTransactionIdAndActionOrderByIdDesc(transactionId, "init")
+                .or(() -> becknTransactionRepository.findFirstByTransactionIdAndActionOrderByIdDesc(transactionId, "search"))
+                .orElse(null);
+        if (tx != null) {
+            tx.setStatus("ACK");
+            becknTransactionRepository.save(tx);
+        }
         
-        VerificationHistory history = verificationHistoryRepository.findAll().stream().filter(h -> transactionId.equals(h.getTransactionId())).findFirst().orElseThrow();
+        VerificationHistory history = verificationHistoryRepository.findFirstByTransactionIdOrderByCreatedAtDesc(transactionId)
+                .orElse(null);
+        if (history == null) {
+            log.warn("processOnInit: No history found for transaction {}", transactionId);
+            return;
+        }
+
         history.setStatus("INITIALIZED");
         verificationHistoryRepository.save(history);
         
         VerificationRecord record = verificationRecordRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId());
-        record.setFinalStatus("INITIALIZED");
-        record.setCredentialStatus("IN_PROGRESS");
-        verificationRecordRepository.save(record);
+        if (record != null) {
+            record.setFinalStatus("INITIALIZED");
+            record.setCredentialStatus("IN_PROGRESS");
+            verificationRecordRepository.save(record);
+        }
         
         updateCandidateSkillStatus(history.getCandidateId(), history.getSkillId(), "INITIALIZED", 0, "UNKNOWN");
         
+        Credential credential = credentialRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId()).orElse(null);
+        String credId = (credential != null && credential.getCredentialId() != null) ? credential.getCredentialId() : "N/A";
+        String providerId = history.getProvider() != null ? history.getProvider() : "onest-skill-registry-bpp";
+
         BecknClient client = "REAL".equalsIgnoreCase(integrationMode) ? realBecknClient : mockBecknClient;
-        client.confirm(transactionId, "provider-123", "CRED-XXX");
+        client.confirm(transactionId, providerId, credId);
     }
 
     public void processOnConfirm(String transactionId, String verificationStatus, int score) {
-        VerificationHistory history = verificationHistoryRepository.findAll().stream().filter(h -> transactionId.equals(h.getTransactionId())).findFirst().orElseThrow();
+        VerificationHistory history = verificationHistoryRepository.findFirstByTransactionIdOrderByCreatedAtDesc(transactionId)
+                .orElse(null);
+        if (history == null) {
+            log.warn("processOnConfirm: No history found for transaction {}", transactionId);
+            return;
+        }
         
-        int educationScore = 20; // Simulated auxiliary score
-        int totalScore = Math.min(score + educationScore, 100);
+        boolean isApproved = "VERIFIED".equalsIgnoreCase(verificationStatus) || score >= 70;
+        // Strictly less than 100 (capped at 95% maximum for approved, 20% for unapproved)
+        int totalScore = isApproved ? Math.min(Math.max(score, 85), 95) : Math.min(score, 20);
         
-        String competency = "Beginner";
-        if (totalScore >= 90) competency = "Advanced";
-        else if (totalScore >= 70) competency = "Intermediate";
-
-        String finalStatus = totalScore >= 90 ? "VERIFIED" : (totalScore >= 70 ? "PARTIALLY VERIFIED" : "NOT VERIFIED");
+        String competency = isApproved ? (totalScore >= 90 ? "Advanced" : "Intermediate") : "Unverified";
+        String finalStatus = isApproved ? (totalScore >= 90 ? "VERIFIED" : "PARTIALLY VERIFIED") : "NOT VERIFIED";
         
         history.setStatus(finalStatus);
         history.setConfidence(totalScore);
@@ -163,27 +198,33 @@ public class VerificationService {
         verificationHistoryRepository.save(history);
         
         VerificationRecord record = verificationRecordRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId());
-        record.setFinalStatus(finalStatus);
-        record.setCredentialStatus("VERIFIED");
-        record.setEducationStatus("VERIFIED");
-        record.setAssessmentStatus("VERIFIED");
-        record.setConfidenceScore(totalScore);
-        record.setCompetencyLevel(competency);
-        record.setVerifiedAt(LocalDateTime.now());
-        verificationRecordRepository.save(record);
+        if (record != null) {
+            record.setFinalStatus(finalStatus);
+            record.setCredentialStatus(isApproved ? "VERIFIED" : "REJECTED");
+            record.setEducationStatus(isApproved ? "VERIFIED" : "REJECTED");
+            record.setAssessmentStatus(isApproved ? "VERIFIED" : "REJECTED");
+            record.setConfidenceScore(totalScore);
+            record.setCompetencyLevel(competency);
+            record.setVerifiedAt(LocalDateTime.now());
+            verificationRecordRepository.save(record);
+        }
         
         updateCandidateSkillStatus(history.getCandidateId(), history.getSkillId(), finalStatus, totalScore, competency);
         
-        Credential credential = credentialRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId()).orElseThrow();
-        credential.setStatus(finalStatus);
-        credentialRepository.save(credential);
+        Credential credential = credentialRepository.findByCandidateIdAndSkillId(history.getCandidateId(), history.getSkillId()).orElse(null);
+        if (credential != null) {
+            credential.setStatus(finalStatus);
+            credentialRepository.save(credential);
+        }
     }
     
     private void updateCandidateSkillStatus(Long candidateId, Long skillId, String status, int score, String competency) {
-        CandidateSkill cs = candidateSkillRepository.findByCandidateIdAndSkillId(candidateId, skillId).orElseThrow();
-        cs.setVerificationStatus(status);
-        cs.setConfidenceScore(score);
-        cs.setCompetencyLevel(competency);
-        candidateSkillRepository.save(cs);
+        CandidateSkill cs = candidateSkillRepository.findByCandidateIdAndSkillId(candidateId, skillId).orElse(null);
+        if (cs != null) {
+            cs.setVerificationStatus(status);
+            cs.setConfidenceScore(score);
+            cs.setCompetencyLevel(competency);
+            candidateSkillRepository.save(cs);
+        }
     }
 }

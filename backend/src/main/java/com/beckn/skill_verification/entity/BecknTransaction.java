@@ -6,7 +6,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "beckn_transaction")
+@Table(name = "beckn_transaction", indexes = {
+    @Index(name = "idx_bt_tx_action", columnList = "transactionId, action"),
+    @Index(name = "idx_bt_message_id", columnList = "messageId")
+})
 public class BecknTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

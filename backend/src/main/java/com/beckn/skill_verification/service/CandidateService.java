@@ -62,7 +62,7 @@ public class CandidateService {
                 verifiedCount++;
             }
         }
-        dto.setOverallVerificationScore(verifiedCount > 0 ? totalScore / verifiedCount : 0);
+        dto.setOverallVerificationScore(verifiedCount > 0 ? Math.min(totalScore / verifiedCount, 95) : 0);
         
         return dto;
     }

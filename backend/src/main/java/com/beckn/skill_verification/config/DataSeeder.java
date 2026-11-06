@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
@@ -24,6 +26,7 @@ public class DataSeeder implements CommandLineRunner {
     private final SkillRepository skillRepository;
     private final CandidateSkillRepository candidateSkillRepository;
     private final CredentialRepository credentialRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -33,14 +36,14 @@ public class DataSeeder implements CommandLineRunner {
         User candidate = new User();
         candidate.setName("Rahul Kumar");
         candidate.setEmail("candidate@test.com");
-        candidate.setPassword("password");
+        candidate.setPassword(passwordEncoder.encode("password"));
         candidate.setRole("CANDIDATE");
         candidate = userRepository.save(candidate);
 
         User employer = new User();
         employer.setName("Demo Employer");
         employer.setEmail("employer@test.com");
-        employer.setPassword("password");
+        employer.setPassword(passwordEncoder.encode("password"));
         employer.setRole("EMPLOYER");
         userRepository.save(employer);
 

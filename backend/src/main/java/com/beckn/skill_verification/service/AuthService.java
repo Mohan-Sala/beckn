@@ -4,6 +4,7 @@ import com.beckn.skill_verification.dto.AuthRequest;
 import com.beckn.skill_verification.dto.AuthResponse;
 import com.beckn.skill_verification.entity.User;
 import com.beckn.skill_verification.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,12 +26,20 @@ public class AuthService {
     private final CandidateProfileRepository profileRepository;
     private final CandidateSkillRepository candidateSkillRepository;
     private final SkillRepository skillRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthResponse login(AuthRequest request) {
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (user.getPassword().equals(request.getPassword())) {
+            boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword())
+                    || user.getPassword().equals(request.getPassword()); // backwards compatibility
+            if (matches) {
+                // Auto-upgrade legacy plaintext password to secure BCrypt hash
+                if (!user.getPassword().startsWith("$2a$") && !user.getPassword().startsWith("$2b$")) {
+                    user.setPassword(passwordEncoder.encode(request.getPassword()));
+                    userRepository.save(user);
+                }
                 String token = tokenProvider.generateToken(user);
                 AuthResponse response = new AuthResponse();
                 response.setToken(token);
@@ -49,7 +58,7 @@ public class AuthService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user = userRepository.save(user);
 

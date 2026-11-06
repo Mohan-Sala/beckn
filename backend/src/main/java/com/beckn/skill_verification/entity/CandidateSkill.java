@@ -5,6 +5,10 @@ import lombok.Data;
 
 @Entity
 @Data
+@Table(name = "candidate_skill", indexes = {
+    @Index(name = "idx_cs_candidate_skill", columnList = "candidateId, skillId"),
+    @Index(name = "idx_cs_verification_status", columnList = "verificationStatus")
+})
 public class CandidateSkill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

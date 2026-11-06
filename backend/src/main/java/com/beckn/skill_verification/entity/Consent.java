@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name = "consent", indexes = {
+    @Index(name = "idx_consent_cand_skill", columnList = "candidateId, skillId")
+})
 public class Consent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
