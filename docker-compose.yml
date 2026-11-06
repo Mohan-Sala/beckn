@@ -1,0 +1,89 @@
+services:
+  # ==========================================
+  # 1. MySQL Database Service
+  # ==========================================
+  mysql:
+    image: mysql:8.0
+    container_name: beckn_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: skill_verification
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - beckn-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ==========================================
+  # 2. Spring Boot Core Engine (BAP + BPP Node)
+  # ==========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: beckn_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/skill_verification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      SERVER_PORT: 8081
+      INTEGRATION_MODE: ${INTEGRATION_MODE:-REAL}
+      ONEST_ENABLED: ${ONEST_ENABLED:-true}
+      ONEST_BASE_URL: ${ONEST_BASE_URL:-http://backend:8081/api/bpp}
+      ONEST_SUBSCRIBER_ID: ${ONEST_SUBSCRIBER_ID:-skill-verification-bap.onest.network}
+      ONEST_SUBSCRIBER_URI: ${ONEST_SUBSCRIBER_URI:-http://backend:8081/api/beckn}
+      BECKN_DOMAIN: ${BECKN_DOMAIN:-onest:work-opportunities}
+      BECKN_GATEWAY_URL: ${BECKN_GATEWAY_URL:-http://backend:8081/api/bpp}
+      BECKN_BAP_ID: ${BECKN_BAP_ID:-skill-verification-bap.onest.network}
+      BECKN_BAP_URI: ${BECKN_BAP_URI:-http://backend:8081/api/beckn}
+      BECKN_KEY_ID: ${BECKN_KEY_ID:-key-1}
+      JWT_SECRET: ${JWT_SECRET:-this-is-a-placeholder-secret-key-that-should-be-changed-in-production-this-is-a-placeholder-secret-key-that-should-be-changed-in-production}
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - beckn-net
+
+  # ==========================================
+  # 3. React Frontend (Nginx SPA)
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: beckn_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    networks:
+      - beckn-net
+
+# ==========================================
+# Named Volumes & Networks
+# ==========================================
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  beckn-net:
+    driver: bridge
